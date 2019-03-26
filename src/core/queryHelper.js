@@ -24,6 +24,10 @@ QueryHelper.prototype._translateCohort = function(cohort){
                 // select.value must be an array
                 match[select.field] = { $in: select.value };
                 break;
+            case "!=":
+                // select.value must be an array
+                match[select.field] = { $ne: select.value };
+                break;
             case ">":
                 // select.value must be a float
                 match[select.field] = { $lt: select.value };
@@ -36,12 +40,18 @@ QueryHelper.prototype._translateCohort = function(cohort){
                 // equation must only have + - * /
 
                 break;
+            case "exists":
+                // We check if the field exists. This is to be used for checking if a patient
+                // has an image
+                match[select.field] = { $exists: true };
+                break;
+            case "count":
+                // equation must only have + - * /
+                match[select.field] = { $cond: { if: { $isArray: "$colors" }, then: { $size: "$colors" }, else: "NA"}};
+                break;
             default:
                 break;
         }
-
-
-
     }
     );
     return match
@@ -78,7 +88,17 @@ QueryHelper.prototype.buildPipeline = function(query){
     query.data_requested.forEach(function (field) {
         fields[field] = 1;
     });
-    let match = _this._translateCohort(query.cohort);
+
+    let match = {};
+    if(query.cohort.length > 1){
+        let subqueries = [];
+        query.cohort.forEach(function (subcohort) {
+            subqueries.push(_this._translateCohort(subcohort));
+        });
+        match= { $or: subqueries };
+    }else{
+        match = _this._translateCohort(query.cohort);
+    }
 
     return pipeline =[
         {$match: match},
