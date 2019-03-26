@@ -34,7 +34,13 @@ QueryController.prototype.processQuery = function(req, res) {
             //     {$match: match},
             //     {$project: fields}
             // ];
-            let answer = _this._dataCollection.aggregate(pipeline).toArray().then(function (results) {
+
+            if(pipeline === "Error"){
+                res.status(500);
+                res.json('Error while building the pipeline: ' + query );
+            }
+
+            _this._dataCollection.aggregate(pipeline).toArray().then(function (results) {
                 res.status(200);
                 res.json(results);
             },function(error){
