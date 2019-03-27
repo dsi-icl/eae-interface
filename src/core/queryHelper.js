@@ -28,47 +28,47 @@ QueryHelper.prototype._translateCohort = function(cohort){
     cohort.forEach(function (select) {
 
         switch (select.op){
-            case "=":
+            case '=':
                 // select.value must be an array
                 match[select.field] = { $in: select.value };
                 break;
-            case "!=":
+            case '!=':
                 // select.value must be an array
                 match[select.field] = { $ne: select.value };
                 break;
-            case ">":
+            case '>':
                 // select.value must be a float
                 match[select.field] = { $lt: select.value };
                 break;
-            case "<":
+            case '<':
                 // select.value must be a float
                 match[select.field] = { $gt: select.value };
                 break;
-            case "derived":
+            case 'derived':
                 // equation must only have + - * /
-                let derivedOperation = select.value.split(" ");
-                if (derivedOperation[0] === "="){match[select.field] = {$eq: select.value};}
-                if (derivedOperation[0] === ">"){match[select.field] = {$gt: select.value};}
-                if (derivedOperation[0] === "<"){match[select.field] = {$lt: select.value};}
+                let derivedOperation = select.value.split(' ');
+                if (derivedOperation[0] === '='){match[select.field] = {$eq: select.value};}
+                if (derivedOperation[0] === '>'){match[select.field] = {$gt: select.value};}
+                if (derivedOperation[0] === '<'){match[select.field] = {$lt: select.value};}
                 break;
-            case "exists":
+            case 'exists':
                 // We check if the field exists. This is to be used for checking if a patient
                 // has an image
                 match[select.field] = { $exists: true };
                 break;
-            case "count":
+            case 'count':
                 // counts can only be positive. NB: > and < are inclusive e.g. < is <=
-                let countOperation = select.value.split(" ");
-                if (countOperation[0] === "="){match[select.field] = {$eq: select.value};}
-                if (countOperation[0] === ">"){match[select.field] = {$gt: select.value};}
-                if (countOperation[0] === "<"){match[select.field] = {$lt: select.value};}
+                let countOperation = select.value.split(' ');
+                if (countOperation[0] === '='){match[select.field] = {$eq: select.value};}
+                if (countOperation[0] === '>'){match[select.field] = {$gt: select.value};}
+                if (countOperation[0] === '<'){match[select.field] = {$lt: select.value};}
                 break;
             default:
                 break;
         }
     }
     );
-    return match
+    return match;
 };
 
 
@@ -121,14 +121,14 @@ QueryHelper.prototype.buildPipeline = function(query){
     let addFields = {};
     // We send back the newly created derived fields by default
     query.new_fields.forEach(function(field){
-        if(field.op === "derived") {
+        if(field.op === 'derived') {
             fields[field.name] = 1;
             addFields[field.name] = _this._createDerivedQuery(value);
         }
-        else if(field.op === "count"){
-            addFields[field.name] = { $cond: { if: { $exists: field.value }, then: { $size: field.value }, else: "NA"}};
+        else if(field.op === 'count'){
+            addFields[field.name] = { $cond: { if: { $exists: field.value }, then: { $size: field.value }, else: 'NA'}};
         }else{
-            return "Error"
+            return 'Error';
         }
     });
 
@@ -140,12 +140,12 @@ QueryHelper.prototype.buildPipeline = function(query){
             addFields.
             subqueries.push(_this._translateCohort(subcohort));
         });
-        match={ $or: subqueries };
+        match = { $or: subqueries };
     }else{
-        match=_this._translateCohort(query.cohort);
+        match = _this._translateCohort(query.cohort);
     }
 
-    return pipeline =[
+    return pipeline = [
         {$addFields: addFields},
         {$match: match},
         {$project: fields}
