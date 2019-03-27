@@ -8,11 +8,19 @@ function QueryHelper(config = {}) {
     let _this = this;
     _this.config = config;
 
+    // bind private members
     _this._translateCohort = QueryHelper.prototype._translateCohort.bind(this);
+    _this._createDerivedQuery = QueryHelper.prototype._createDerivedQuery.bind(this);
 
     // Bind member functions
     _this.buildPipeline = QueryHelper.prototype.buildPipeline.bind(this);
 }
+
+QueryHelper.prototype._createDerivedQuery = function(cohort) {
+
+
+};
+
 
 QueryHelper.prototype._translateCohort = function(cohort){
     let match = {};
@@ -46,8 +54,11 @@ QueryHelper.prototype._translateCohort = function(cohort){
                 match[select.field] = { $exists: true };
                 break;
             case "count":
-                // equation must only have + - * /
-                match[select.field] = { $cond: { if: { $isArray: "$colors" }, then: { $size: "$colors" }, else: "NA"}};
+                // counts can only be positive. NB: > and < are inclusive e.g. < is <=
+                let countOperation = select.value.split(" ");
+                if (countOperation[0] === "="){match[select.field] = {$eq: select.value};}
+                if (countOperation[0] === ">"){match[select.field] = {$gt: select.value};}
+                if (countOperation[0] === "<"){match[select.field] = {$lt: select.value};}
                 break;
             default:
                 break;
@@ -109,9 +120,10 @@ QueryHelper.prototype.buildPipeline = function(query){
     query.new_fields.forEach(function(field){
         if(field.op === "derived") {
             fields[field.name] = 1;
+            addFields[field.name] = _this._createDerivedQuery(value);
         }
         else if(field.op === "count"){
-            match[select.field] = { $cond: { if: { $isArray: "$colors" }, then: { $size: "$colors" }, else: "NA"}};
+            addFields[field.name] = { $cond: { if: { $exists: field.value }, then: { $size: field.value }, else: "NA"}};
         }else{
             return "Error"
         }
