@@ -46,7 +46,10 @@ QueryHelper.prototype._translateCohort = function(cohort){
                 break;
             case "derived":
                 // equation must only have + - * /
-
+                let derivedOperation = select.value.split(" ");
+                if (derivedOperation[0] === "="){match[select.field] = {$eq: select.value};}
+                if (derivedOperation[0] === ">"){match[select.field] = {$gt: select.value};}
+                if (derivedOperation[0] === "<"){match[select.field] = {$lt: select.value};}
                 break;
             case "exists":
                 // We check if the field exists. This is to be used for checking if a patient
