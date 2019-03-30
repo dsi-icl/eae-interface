@@ -30,19 +30,19 @@ QueryHelper.prototype._translateCohort = function(cohort){
         switch (select.op){
             case '=':
                 // select.value must be an array
-                match[select.field] = { $in: select.value };
+                match[select.field] = { $in: [select.value] };
                 break;
             case '!=':
                 // select.value must be an array
-                match[select.field] = { $ne: select.value };
+                match[select.field] = { $ne: [select.value] };
                 break;
             case '>':
                 // select.value must be a float
-                match[select.field] = { $lt: select.value };
+                match[select.field] = { $lt: parseFloat(select.value) };
                 break;
             case '<':
                 // select.value must be a float
-                match[select.field] = { $gt: select.value };
+                match[select.field] = { $gt: parseFloat(select.value) };
                 break;
             case 'derived':
                 // equation must only have + - * /
@@ -59,9 +59,10 @@ QueryHelper.prototype._translateCohort = function(cohort){
             case 'count':
                 // counts can only be positive. NB: > and < are inclusive e.g. < is <=
                 let countOperation = select.value.split(' ');
-                if (countOperation[0] === '='){match[select.field] = {$eq: select.value};}
-                if (countOperation[0] === '>'){match[select.field] = {$gt: select.value};}
-                if (countOperation[0] === '<'){match[select.field] = {$lt: select.value};}
+                let countfield = select.field + '.count';
+                if (countOperation[0] === '='){match[countfield] = {$eq: parseInt(countOperation[1])};}
+                if (countOperation[0] === '>'){match[countfield] = {$gt:  parseInt(countOperation[1])};}
+                if (countOperation[0] === '<'){match[countfield] = {$lt:  parseInt(countOperation[1])};}
                 break;
             default:
                 break;
@@ -120,33 +121,31 @@ QueryHelper.prototype.buildPipeline = function(query){
 
     let addFields = {};
     // We send back the newly created derived fields by default
-    query.new_fields.forEach(function(field){
-        if(field.op === 'derived') {
-            fields[field.name] = 1;
-            addFields[field.name] = _this._createDerivedQuery(value);
-        }
-        else if(field.op === 'count'){
-            addFields[field.name] = { $cond: { if: { $exists: field.value }, then: { $size: field.value }, else: 'NA'}};
-        }else{
-            return 'Error';
-        }
-    });
-
+    if (query.new_fields.length > 0) {
+        query.new_fields.forEach(function (field) {
+            if (field.op === 'derived') {
+                fields[field.name] = 1;
+                addFields[field.name] = _this._createDerivedQuery(field.value);
+            } else {
+                return 'Error';
+            }
+        });
+    }
 
     let match = {};
     if(query.cohort.length > 1){
         let subqueries = [];
         query.cohort.forEach(function (subcohort) {
-            addFields.
+            // addFields.
             subqueries.push(_this._translateCohort(subcohort));
         });
         match = { $or: subqueries };
     }else{
-        match = _this._translateCohort(query.cohort);
+        match = _this._translateCohort(query.cohort[0]);
     }
 
-    return pipeline = [
-        {$addFields: addFields},
+    return [
+        // {$addFields: addFields},
         {$match: match},
         {$project: fields}
     ];
