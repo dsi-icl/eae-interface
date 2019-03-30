@@ -46,7 +46,10 @@ QueryController.prototype.processQuery = function(req, res) {
                         'op': '='}],
                     [{ 'field': '31.0.0',
                         'value': 'Female',
-                        'op': '='}]
+                        'op': '='},
+                        { 'field': '1111111111111.0.0',
+                        'value': '',
+                        'op': 'exists'}]
                 ],
                 'new_fields': [
                 //     {
