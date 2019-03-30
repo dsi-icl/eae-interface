@@ -11,6 +11,7 @@ function QueryHelper(config = {}) {
     // bind private members
     _this._translateCohort = QueryHelper.prototype._translateCohort.bind(this);
     _this._createDerivedQuery = QueryHelper.prototype._createDerivedQuery.bind(this);
+    _this._isEmptyObject = QueryHelper.prototype._isEmptyObject.bind(this);
 
     // Bind member functions
     _this.buildPipeline = QueryHelper.prototype.buildPipeline.bind(this);
@@ -21,6 +22,10 @@ QueryHelper.prototype._createDerivedQuery = function(cohort) {
 
 };
 
+
+QueryHelper.prototype._isEmptyObject = function(obj){
+    return !Object.keys(obj).length;
+}
 
 QueryHelper.prototype._translateCohort = function(cohort){
     let match = {};
@@ -144,11 +149,20 @@ QueryHelper.prototype.buildPipeline = function(query){
         match = _this._translateCohort(query.cohort[0]);
     }
 
-    return [
-        // {$addFields: addFields},
-        {$match: match},
-        {$project: fields}
-    ];
+    if(_this._isEmptyObject(addFields)){
+        return [
+            {$match: match},
+            {$project: fields}
+        ];
+    }else{
+        return [
+            {$addFields: addFields},
+            {$match: match},
+            {$project: fields}
+        ];
+    }
+
+
 };
 
 module.exports = QueryHelper;
