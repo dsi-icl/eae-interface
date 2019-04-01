@@ -10,22 +10,60 @@ function QueryHelper(config = {}) {
 
     // bind private members
     _this._translateCohort = QueryHelper.prototype._translateCohort.bind(this);
-    _this._createDerivedQuery = QueryHelper.prototype._createDerivedQuery.bind(this);
+    _this._createNewdField = QueryHelper.prototype._createNewdField.bind(this);
     _this._isEmptyObject = QueryHelper.prototype._isEmptyObject.bind(this);
 
     // Bind member functions
     _this.buildPipeline = QueryHelper.prototype.buildPipeline.bind(this);
 }
 
-QueryHelper.prototype._createDerivedQuery = function(cohort) {
 
+/**
+ * expression = {
+ *   "left": json for nested or string for field id or Float,
+ *   "right": json for nested or string for field id or Float,
+ *   "op": String // Logical operation
+ *  }
+ */
 
+QueryHelper.prototype._createNewdField = function(expression) {
+    let _this = this;
+    let newField = {};
+
+    switch (expression.op) {
+        case '*':
+            newField = {"$multiply": [_this._createNewdField(expression.left), _this._createNewdField(expression.right)]};
+            break;
+        case '/':
+            newField = {"$divide": [_this._createNewdField(expression.left), _this._createNewdField(expression.right)]};
+            break;
+        case '-':
+            newField = {"$subtract": [_this._createNewdField(expression.left), _this._createNewdField(expression.right)]};
+            break;
+        case '+':
+            newField = {"$add": [_this._createNewdField(expression.left), _this._createNewdField(expression.right)]};
+            break;
+        case '^':
+            //NB the right side my be an integer while the left must be a field !
+            newField = {"$pow": [ '$' + expression.left,  parseInt(expression.right)]};
+            break;
+        case 'val':
+            newField = parseFloat(expression.left);
+            break;
+        case 'field':
+            newField =  '$' + expression.left;
+            break;
+        default:
+            break;
+    }
+
+    return newField;
 };
 
 
 QueryHelper.prototype._isEmptyObject = function(obj){
     return !Object.keys(obj).length;
-}
+};
 
 QueryHelper.prototype._translateCohort = function(cohort){
     let match = {};
@@ -52,9 +90,9 @@ QueryHelper.prototype._translateCohort = function(cohort){
             case 'derived':
                 // equation must only have + - * /
                 let derivedOperation = select.value.split(' ');
-                if (derivedOperation[0] === '='){match[select.field] = {$eq: select.value};}
-                if (derivedOperation[0] === '>'){match[select.field] = {$gt: select.value};}
-                if (derivedOperation[0] === '<'){match[select.field] = {$lt: select.value};}
+                if (derivedOperation[0] === '='){match[select.field] = {$eq: parseFloat(select.value)};}
+                if (derivedOperation[0] === '>'){match[select.field] = {$gt: parseFloat(select.value)};}
+                if (derivedOperation[0] === '<'){match[select.field] = {$lt: parseFloat(select.value)};}
                 break;
             case 'exists':
                 // We check if the field exists. This is to be used for checking if a patient
@@ -87,25 +125,25 @@ QueryHelper.prototype._translateCohort = function(cohort){
     "new_fields": [
         {
         "name": String // Name of the new field
-        "value": String // Field in the form X.X for a count otherwise and equation defining the derived feature
-        "op": String // Count or derived
+        "value": String // equation defining the derived feature
+        "op": String // Derived only
         }
     ],
     "cohort": [
         [{
-        "field": String, // Field identifier
+        "field": String, // Field identifier or field in the form X.X for a count
         "value": String Or Float, // Value requested can either categorical
         "op": String // Logical operation
         },
         {
-        "field": String, // Field identifier
+        "field": String, // Field identifier or field in the form X.X for a count
         "value": String Or Float, // Value requested can either categorical
         "op": String // Logical operation
         }
      ],
      [
      {
-        "field": String, // Field identifier
+        "field": String, // Field identifier or field in the form X.X for a count
         "value": String Or Float, // Value requested can either categorical
         "op": String // Logical operation
         }
@@ -130,7 +168,7 @@ QueryHelper.prototype.buildPipeline = function(query){
         query.new_fields.forEach(function (field) {
             if (field.op === 'derived') {
                 fields[field.name] = 1;
-                addFields[field.name] = _this._createDerivedQuery(field.value);
+                addFields[field.name] = _this._createNewdField(field.value.toJSON());
             } else {
                 return 'Error';
             }
@@ -161,8 +199,6 @@ QueryHelper.prototype.buildPipeline = function(query){
             {$project: fields}
         ];
     }
-
-
 };
 
 module.exports = QueryHelper;
