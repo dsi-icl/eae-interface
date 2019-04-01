@@ -168,7 +168,7 @@ QueryHelper.prototype.buildPipeline = function(query){
         query.new_fields.forEach(function (field) {
             if (field.op === 'derived') {
                 fields[field.name] = 1;
-                addFields[field.name] = _this._createNewdField(field.value.toJSON());
+                addFields[field.name] = _this._createNewdField(field.value);
             } else {
                 return 'Error';
             }

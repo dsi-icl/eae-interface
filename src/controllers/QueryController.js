@@ -38,25 +38,58 @@ QueryController.prototype.processQuery = function(req, res) {
                 'lastClaimed' : 1542288352356.0,
                 'queryResult' : {},
                 'data_requested': [ '31.0.0',  '102.0.1', '102.0.2'],
-                'cohort': [[{ 'field': '102.0',
-                    'value': '> 1',
-                    'op': 'count'},
-                    { 'field': '31.0.0',
-                        'value': 'Male',
-                        'op': '='}],
+                'cohort': [
                     [{ 'field': '31.0.0',
-                        'value': 'Female',
-                        'op': '='},
-                        { 'field': '1111111111111.0.0',
-                        'value': '',
-                        'op': 'exists'}]
+                            'value': 'Male',
+                            'op': '='}]
+                    // [{ 'field': '102.0',
+                    // 'value': '> 1',
+                    // 'op': 'count'},
+                    // { 'field': '31.0.0',
+                    //     'value': 'Male',
+                    //     'op': '='}],
+                    // [{ 'field': '31.0.0',
+                    //     'value': 'Female',
+                    //     'op': '='},
+                    //     { 'field': '1111111111111.0.0',
+                    //     'value': '',
+                    //     'op': 'exists'}]
                 ],
                 'new_fields': [
                 //     {
-                //     'name': 'test',
-                //     'value': '102.0',
-                //     'op': 'count'
+                //         'name': 'BMI',
+                //         'value': {
+                //             'left': {
+                //                 'left': '12143.0.0',
+                //                 'right': '',
+                //                 'op': 'field'
+                //             },
+                //             'right': {
+                //                 'left': '12144.0.0',
+                //                 'right': '2',
+                //                 'op': '^'
+                //             },
+                //             'op': '/'
+                //         },
+                //     'op': 'derived'
                 // }
+                        {
+                            'name': 'sum_heart_rate',
+                            'value': {
+                                'left': {
+                                    'left': '102.0.0',
+                                    'right': '',
+                                    'op': 'field'
+                                },
+                                'right': {
+                                    'left': '102.0.1',
+                                    'right': '',
+                                    'op': 'field'
+                                },
+                                'op': '+'
+                            },
+                        'op': 'derived'
+                    }
                 ]
             };
             let pipeline = _this._queryHelper.buildPipeline(query_test);
