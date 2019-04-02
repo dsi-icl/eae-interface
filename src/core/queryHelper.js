@@ -1,6 +1,7 @@
 /**
  * @fn QueryHelper
- * @desc
+ * @desc Helper to manipulate and query the MongoDB database storing UK biobank data formatted in the
+ * white paper format
  * @param config
  * @constructor
  */
@@ -19,13 +20,16 @@ function QueryHelper(config = {}) {
 
 
 /**
+ * @fn _createNewdField
+ * @desc Creates the new fields required to compare when using an expresion like BMI or an average
  * expression = {
  *   "left": json for nested or string for field id or Float,
  *   "right": json for nested or string for field id or Float,
  *   "op": String // Logical operation
- *  }
+ * @param expression
+ * @return json formated in the mongo format in the pipeline stage addfield
+ * @private
  */
-
 QueryHelper.prototype._createNewdField = function(expression) {
     let _this = this;
     let newField = {};
@@ -60,11 +64,24 @@ QueryHelper.prototype._createNewdField = function(expression) {
     return newField;
 };
 
-
+/**
+ * @fn _isEmptyObject
+ * @desc tests if an object is empty
+ * @param obj
+ * @returns {boolean}
+ * @private
+ */
 QueryHelper.prototype._isEmptyObject = function(obj){
     return !Object.keys(obj).length;
 };
 
+
+/**
+ * @fn _translateCohort
+ * @desc Tranforms a query into a mongo query.
+ * @param cohort
+ * @private
+ */
 QueryHelper.prototype._translateCohort = function(cohort){
     let match = {};
 
