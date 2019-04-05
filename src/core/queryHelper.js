@@ -11,7 +11,7 @@ function QueryHelper(config = {}) {
 
     // bind private members
     _this._translateCohort = QueryHelper.prototype._translateCohort.bind(this);
-    _this._createNewdField = QueryHelper.prototype._createNewdField.bind(this);
+    _this._createNewField = QueryHelper.prototype._createNewField.bind(this);
     _this._isEmptyObject = QueryHelper.prototype._isEmptyObject.bind(this);
 
     // Bind member functions
@@ -30,22 +30,22 @@ function QueryHelper(config = {}) {
  * @return json formated in the mongo format in the pipeline stage addfield
  * @private
  */
-QueryHelper.prototype._createNewdField = function(expression) {
+QueryHelper.prototype._createNewField = function(expression) {
     let _this = this;
     let newField = {};
 
     switch (expression.op) {
         case '*':
-            newField = {"$multiply": [_this._createNewdField(expression.left), _this._createNewdField(expression.right)]};
+            newField = {"$multiply": [_this._createNewField(expression.left), _this._createNewField(expression.right)]};
             break;
         case '/':
-            newField = {"$divide": [_this._createNewdField(expression.left), _this._createNewdField(expression.right)]};
+            newField = {"$divide": [_this._createNewField(expression.left), _this._createNewField(expression.right)]};
             break;
         case '-':
-            newField = {"$subtract": [_this._createNewdField(expression.left), _this._createNewdField(expression.right)]};
+            newField = {"$subtract": [_this._createNewField(expression.left), _this._createNewField(expression.right)]};
             break;
         case '+':
-            newField = {"$add": [_this._createNewdField(expression.left), _this._createNewdField(expression.right)]};
+            newField = {"$add": [_this._createNewField(expression.left), _this._createNewField(expression.right)]};
             break;
         case '^':
             //NB the right side my be an integer while the left must be a field !
@@ -185,7 +185,7 @@ QueryHelper.prototype.buildPipeline = function(query){
         query.new_fields.forEach(function (field) {
             if (field.op === 'derived') {
                 fields[field.name] = 1;
-                addFields[field.name] = _this._createNewdField(field.value);
+                addFields[field.name] = _this._createNewField(field.value);
             } else {
                 return 'Error';
             }

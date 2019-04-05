@@ -30,24 +30,21 @@ function QueryController(queryCollection,dataCollection,queryHelper) {
 //     'queryResult' : {},
 //     'data_requested': [ '31.0.0',  '102.0.1', '102.0.2'],
 //     'cohort': [
+//         [{ 'field': '102.0',
+//         'value': '> 1',
+//         'op': 'count'},
+//         { 'field': '31.0.0',
+//             'value': 'Male',
+//             'op': '='}],
 //         [{ 'field': '31.0.0',
-//                 'value': 'Male',
-//                 'op': '='}]
-// [{ 'field': '102.0',
-// 'value': '> 1',
-// 'op': 'count'},
-// { 'field': '31.0.0',
-//     'value': 'Male',
-//     'op': '='}],
-// [{ 'field': '31.0.0',
-//     'value': 'Female',
-//     'op': '='},
-//     { 'field': '1111111111111.0.0',
-//     'value': '',
-//     'op': 'exists'}]
-// ],
-// 'new_fields': [
-//     {
+//             'value': 'Female',
+//             'op': '='},
+//             { 'field': '102.0.1',
+//             'value': '',
+//             'op': 'exists'}]
+//     ],
+//     'new_fields': [
+//    {
 //         'name': 'BMI',
 //         'value': {
 //             'left': {
@@ -62,25 +59,8 @@ function QueryController(queryCollection,dataCollection,queryHelper) {
 //             },
 //             'op': '/'
 //         },
-//     'op': 'derived'
-// }
-//             {
-//                 'name': 'sum_heart_rate',
-//                 'value': {
-//                     'left': {
-//                         'left': '102.0.0',
-//                         'right': '',
-//                         'op': 'field'
-//                     },
-//                     'right': {
-//                         'left': '102.0.1',
-//                         'right': '',
-//                         'op': 'field'
-//                     },
-//                     'op': '+'
-//                 },
-//             'op': 'derived'
-//         }
+//         'op': 'derived'
+//    }
 //     ]
 // };
 
