@@ -1,5 +1,5 @@
 # Select source image
-FROM node:11.10.0-alpine
+FROM node:11.15.0-alpine
 
 # Create app directories
 RUN mkdir -p /usr/app
